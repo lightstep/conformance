@@ -96,6 +96,7 @@ func contextsAreEqual(a lightstep.SpanContext, otcontext opentracing.SpanContext
 	if otcontext == nil {
 		return fmt.Errorf("extracted context was nil")
 	}
+
 	b, ok := otcontext.(lightstep.SpanContext)
 	if !ok {
 		panic("not ok")

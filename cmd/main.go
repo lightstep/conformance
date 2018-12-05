@@ -50,7 +50,7 @@ func main() {
 	}
 
 	if err := result.Equals(tracer, ctx); err != nil {
-		log.Println(body, results)
+		log.Println(body, result)
 		log.Fatal(err)
 	}
 

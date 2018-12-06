@@ -28,10 +28,12 @@ func main() {
 	cmd := exec.Command(argv[0], argv[1:]...)
 	cmd.Stdin = stdinReader
 	cmd.Stdout = stdoutWriter
+	cmd.Stderr = os.Stderr
 	go func() {
 		if err := cmd.Run(); err != nil {
 			log.Fatal(err)
 		}
+		log.Println("program has exited")
 	}()
 
 	ctx := tracer.StartSpan("fake").Context()
@@ -42,6 +44,10 @@ func main() {
 	}
 	if err := json.NewEncoder(stdinWriter).Encode(body); err != nil {
 		log.Fatalln("could not marshall body: ", err)
+	}
+
+	if err := stdinWriter.Close(); err != nil {
+		log.Println("failed to close writer")
 	}
 
 	var result Body

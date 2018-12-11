@@ -1,5 +1,16 @@
 require 'json'
+require 'base64'
+require 'lightstep'
+require 'opentracing'
+
+
+tracer = LightStep::Tracer.new(access_token: "invalid", component_name: "test")
 
 body = JSON.parse(STDIN.read)
-STDOUT.write JSON.generate(body)
+span_context = tracer.extract(OpenTracing::FORMAT_TEXT_MAP, body['text_map'])
+
+new_text_map = Hash.new
+tracer.inject(span_context, OpenTracing::FORMAT_TEXT_MAP, new_text_map)
+
+STDOUT.write JSON.generate({"text_map"=> new_text_map})
 

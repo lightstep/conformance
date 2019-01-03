@@ -9,6 +9,7 @@ import (
 	"os/exec"
 
 	lightstep "github.com/lightstep/lightstep-tracer-go"
+	opentracing "github.com/opentracing/opentracing-go"
 )
 
 func main() {
@@ -36,7 +37,7 @@ func main() {
 		log.Println("program has exited")
 	}()
 
-	ctx := tracer.StartSpan("fake").Context()
+	ctx := newSpanContext(tracer)
 
 	body, err := NewBodyFromContext(tracer, ctx)
 	if err != nil {
@@ -63,4 +64,17 @@ func main() {
 	log.Println("SUCCESS: span contexts are equal")
 	cmd.Process.Kill()
 	os.Exit(0)
+}
+
+func newSpanContext(tracer opentracing.Tracer) opentracing.SpanContext {
+	ctx := tracer.StartSpan("fake").Context()
+	lsctx, ok := ctx.(lightstep.SpanContext)
+	if !ok {
+		panic("could not convert context to lightstep context")
+	}
+
+	// Set IDs to uint64 max to test for any weirdness going over the int64 max.
+	lsctx.SpanID = ^uint64(0)
+	lsctx.TraceID = ^uint64(0)
+	return lsctx
 }
